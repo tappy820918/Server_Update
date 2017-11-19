@@ -8,5 +8,5 @@ $ python -m SimpleHTTPServer 8000
 ```
  - Client side terminal
 ```
-$ python Update,py
+$ python Updat.py
 ```
