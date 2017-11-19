@@ -2,7 +2,11 @@
 Python Implemented Server Update system
 
 Run code:
-```python
-s = "Python syntax highlighting"
-print s
+ - Server side Terminal
+```
+python -m SimpleHTTPServer 8000
+```
+ - Client side termina;
+```
+python Update,py
 ```
