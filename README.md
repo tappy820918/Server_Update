@@ -4,9 +4,9 @@ Python Implemented Server Update system
 Run code:
  - Server side Terminal
 ```
-python -m SimpleHTTPServer 8000
+$ python -m SimpleHTTPServer 8000
 ```
- - Client side termina;
+ - Client side terminal
 ```
-python Update,py
+$ python Update,py
 ```
