@@ -1,7 +1,7 @@
 # Server_Update
 ##Python Implemented Server Update system
 
-### First set 
+### First set the folder **Server** to same directory as Update.py
 
 Run code:
  - Server side Terminal
