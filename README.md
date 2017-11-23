@@ -1,5 +1,5 @@
 # Server_Update
-##Python Implemented Server Update system
+Python Implemented Server Update system
 
 ### First set the folder *Server* to same directory as Update.py
 
@@ -14,7 +14,7 @@ $ python -m SimpleHTTPServer 8000
 $ python Update.py
 ```
 
-# This update file program is mainly to :
+## This update file program is mainly to :
 1. Set up connection from client to server via http
 2. Download and start the running background program __mainfile__ 
 3.  Download setting file __setting__ for __mainfile__
