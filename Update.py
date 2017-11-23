@@ -27,7 +27,7 @@ from urllib import urlopen
 '''
 
 ############ Initial Setting ############
-MAC = '10.137.99.226'                   #
+MAC = 'XX.XXX.XX.XXX'                   #
 PORT = '8000'                           #
 __configuration__ = 'config.csv'        #
 __mainfile__ = 'Toy.py'                 #
