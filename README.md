@@ -5,7 +5,7 @@ Python Implemented Server Update system
 
 Run code:
  - On server side Terminal
-```
+```cmd
 $ python -m SimpleHTTPServer 8000
 ```
 
