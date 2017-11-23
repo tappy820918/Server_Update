@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+# -*- coding: utf-8 -*-
 import csv
 import os
 import time
@@ -7,24 +7,39 @@ from distutils.version import StrictVersion
 from subprocess import check_output
 from urllib import urlopen
 
-############# Initial Setting ############
-MAC = '10.137.99.200'                    #
-#MAC = '192.168.0.110'                   #
-__configuration__ = 'config.csv'         #
-__mainfile__ = 'Toy.py'                  #
-__setting__ = 'Toy_setting.csv'          # 
-__version__ = '0.0.1'                    #
-##########################################
+'''
+    # This update file program is mainly to :
+    1. Set up connection from client to server via http
+    2. Download and start the running background program __mainfile__ 
+    3.  Download setting file __setting__ for __mainfile__
+    4. Update __mainfile__ & __setting__ if the version is higher in server/ config.csv
 
-csv_get_url = 'http://'+MAC+':8000/Server/'+__configuration__
-main_file_get_url = 'http://'+MAC+':8000/Server/'+__mainfile__
-setting_get_url = 'http://'+MAC+':8000/Server/'+__setting__
+    - Note that in __mainfile__ all command **MUST NOT EXECUTE in IMPORTING**
+        ( in the `check_output_cmd` we import __version__ from __mainfile__ )
+
+    - The version setting is controled by `StrictVersion` so should be set carefully
+'''
+
+############ Initial Setting ############
+MAC = '10.137.99.226'                   #
+PORT = '8000'                           #
+__configuration__ = 'config.csv'        #
+__mainfile__ = 'Toy.py'                 #
+__setting__ = 'Toy_setting.csv'         #
+#########################################
+
+######################################################################################################
+csv_get_url = 'http://' + MAC + ':' + PORT + '/' + 'Server/' + __configuration__
+main_file_get_url = 'http://' + MAC +':' + PORT + '/' + 'Server/' + __mainfile__
+setting_get_url = 'http://' + MAC +':' + PORT + '/' + 'Server/' + __setting__
 
 execute_cmd = 'python ' + __mainfile__
 execute_cmd_background = execute_cmd + ' &'
-check_output_cmd = 'python -c "from '+__mainfile__[:-3]+' import __version__; print __version__"'
+check_output_cmd = 'python -c "from ' + __mainfile__[:-3] + ' import __version__; print __version__"'
+
 PIDKILL = ''
-__version__ = '0.0.0'
+__version__ = '0.0.1'
+######################################################################################################
 def client_get_csv():
     print "Downloading file " + __configuration__ + "..."
     r = urlopen(csv_get_url, proxies=None)
@@ -43,22 +58,30 @@ def client_get_setting():
     with open(__setting__, 'wb') as fd:
         fd.write(r.read())
 
-def restart_background_program():
-    os.system(execute_cmd_background)
+def client_get_mainfile_version():
+    '''
+        This function reads the first line of the main file and parse the version,
+        therefore the first line should end with file version, somehing like:
+        __version__ = '0.0.1'
+    '''
+    r = urlopen(main_file_get_url, proxies=None)
+    version = r.readline()[-7:-2]
+    return version
 
-def find_program(program_list):
-    for list in program_list:
-        if list[-len(execute_cmd):] == execute_cmd:
-            return list
+def client_get_setup_version():
+    r = urlopen(setting_get_url, proxies=None)
+    version = r.readline().strip()
+    return version
 
 def get_pid():
     '''
-        In this function we want to get the pid of the executing command
-        (the number"5724" in the bellow example)
+        This function aimed to get the pid of the executing command
+        (the number '5724' in the bellow example)
         
-        ubuntu@1605I0000033:$ ps -ef |grep Toy.py
+        ubuntu@1605I0000033$ ps -ef |grep Toy.py
         ubuntu     5724  6364  0 09:08 pts/4    00:00:00 python Toy.py
         ubuntu     5725  6347  0 09:09 pts/3    00:00:00 grep --color=auto Toy.py
+
     '''
     fetch_pid = 'ps -ef |grep '+ __mainfile__
     program_list = check_output(fetch_pid, shell=True).split("\n")
@@ -76,12 +99,6 @@ def read_config_csv():
     f.close()
     return (data)
 
-def write_config_csv(data):
-    f = open(__configuration__, "w")
-    for string in data:
-        f.writelines(string + '\n')
-    f.close()
-
 def read_setting_csv():
     f = open(__setting__, "r")
     data = [x.strip() for x in f.readlines()]
@@ -92,7 +109,7 @@ if __name__ == '__main__':
     client_get_csv()
     client_get_setting()
     client_get_main_file()
-    restart_background_program()
+    os.system(execute_cmd_background) # restart_background_program
     PIDKILL = get_pid()
     __version__ = check_output(check_output_cmd,shell = True)
     print "Current version is", __version__
@@ -104,25 +121,36 @@ if __name__ == '__main__':
             Setting_list = read_setting_csv()
             print "Setting_list",Setting_list
             print "Update_list: ",Update_list, "Current running version :",__version__
-            if StrictVersion(Update_list[0]) > StrictVersion(__version__):
+            if StrictVersion(Update_list[0]) > StrictVersion(__version__) and StrictVersion(Update_list[0]) == StrictVersion(client_get_mainfile_version()):
                 os.system(PIDKILL)
                 client_get_main_file()
                 __version__ = check_output(check_output_cmd,shell = True)
                 print "<===== RESTART ",__mainfile__," version ", __version__[:-1]," =====>"
                 print "\n"
-                restart_background_program()
+                os.system(execute_cmd_background) 
                 PIDKILL = get_pid()
 
-            if StrictVersion(Update_list[1]) > StrictVersion(Setting_list[0]):
+            if StrictVersion(Update_list[1]) > StrictVersion(Setting_list[0]) and StrictVersion(Update_list[1]) == StrictVersion(client_get_setup_version()):
                 client_get_setting()
                 print "<===== RESTART ",__setting__," version ", Setting_list[0]," =====>"
                 print "\n"
-            
-            time.sleep(25)
+            time.sleep(5)
+
         except KeyboardInterrupt:
             os.system(PIDKILL)
             print "\n KeyboardInterrupt => Kill",__mainfile__,"--pid ",PIDKILL[6:]
             break
-        except:
-            print "Error. Terminating Upating system"
+
+        except IOError as e:
+            os.system(PIDKILL)
+            print "IOError, Shutting down Update..."
+            print e
+            break
+
+        except Exception as e:
+            os.system(PIDKILL)
+            print "\n Shutting down Update..."
+            print "======== Original error message ========"
+            print e
+            print "========================================"
             break
