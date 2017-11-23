@@ -9,9 +9,9 @@ Python Implemented Server Update system
 - Note that in __mainfile__ all command **MUST NOT EXECUTE in IMPORTING**
     ( in the `check_output_cmd` we import __version__ from __mainfile__ )
 - The version setting is controled by `StrictVersion` so should be set carefully
+---
 
 ### First set the folder *Server* to same directory as Update.py
----
 Run code:
  - On server side Terminal
 ```cmd
