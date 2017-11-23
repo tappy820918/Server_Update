@@ -8,16 +8,21 @@ from subprocess import check_output
 from urllib import urlopen
 
 '''
-    # This update file program is mainly to :
+    ## This update file program is mainly to :
     1. Set up connection from client to server via http
     2. Download and start the running background program __mainfile__ 
-    3.  Download setting file __setting__ for __mainfile__
+    3. Download setting file __setting__ for __mainfile__
     4. Update __mainfile__ & __setting__ if the version is higher in server/ config.csv
 
     - Note that in __mainfile__ all command **MUST NOT EXECUTE in IMPORTING**
         ( in the `check_output_cmd` we import __version__ from __mainfile__ )
-
     - The version setting is controled by `StrictVersion` so should be set carefully
+    ---
+    ## Run code:
+     - On server side Terminal
+    `$ python -m SimpleHTTPServer 8000`
+     - On client side terminal
+    `$ python Update.py`
 '''
 
 ############ Initial Setting ############
@@ -112,8 +117,7 @@ if __name__ == '__main__':
     os.system(execute_cmd_background) # restart_background_program
     PIDKILL = get_pid()
     __version__ = check_output(check_output_cmd,shell = True)
-    print "Current version is", __version__
-    print "\n"
+    print "Current version is", __version__,"\n"
     while(1):
         try:
             client_get_csv()
@@ -125,15 +129,13 @@ if __name__ == '__main__':
                 os.system(PIDKILL)
                 client_get_main_file()
                 __version__ = check_output(check_output_cmd,shell = True)
-                print "<===== RESTART ",__mainfile__," version ", __version__[:-1]," =====>"
-                print "\n"
+                print "<===== RESTART ",__mainfile__," version ", __version__[:-1]," =====>\n"
                 os.system(execute_cmd_background) 
                 PIDKILL = get_pid()
 
             if StrictVersion(Update_list[1]) > StrictVersion(Setting_list[0]) and StrictVersion(Update_list[1]) == StrictVersion(client_get_setup_version()):
                 client_get_setting()
-                print "<===== RESTART ",__setting__," version ", Setting_list[0]," =====>"
-                print "\n"
+                print "<===== RESTART ",__setting__," version ", Setting_list[0]," =====>\n"
             time.sleep(5)
 
         except KeyboardInterrupt:
@@ -143,8 +145,7 @@ if __name__ == '__main__':
 
         except IOError as e:
             os.system(PIDKILL)
-            print "IOError, Shutting down Update..."
-            print e
+            print "IOError, Shutting down Update...\n", e
             break
 
         except Exception as e:
